@@ -9,7 +9,7 @@ import {
   squadOf,
   useAuction,
 } from '../../context/AuctionContext';
-import { formatRupees } from '../../utils';
+import { formatRupees, whatsappLink } from '../../utils';
 
 export function AuctionPage() {
   const { state, dispatch } = useAuction();
@@ -38,6 +38,15 @@ export function AuctionPage() {
   function endCategory() {
     dispatch({ type: 'END_CATEGORY' });
     navigate('/admin/start');
+  }
+
+  // Open WhatsApp with the congratulation message, then record the sale.
+  function handleSold() {
+    if (player && leader) {
+      const text = `Congratulations ${player.name}! You have been selected for ${leader.name} in ${config.name}.`;
+      window.open(whatsappLink(player.phone, text), '_blank', 'noopener');
+    }
+    dispatch({ type: 'SOLD' });
   }
 
   return (
@@ -76,7 +85,7 @@ export function AuctionPage() {
                 <button
                   className="btn btn-success"
                   disabled={!leader}
-                  onClick={() => dispatch({ type: 'SOLD' })}
+                  onClick={handleSold}
                 >
                   {leader ? `SOLD to ${leader.name}` : 'SOLD'}
                 </button>

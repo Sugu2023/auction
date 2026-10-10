@@ -204,6 +204,20 @@ interface AuctionContextValue {
 
 const AuctionContext = createContext<AuctionContextValue | null>(null);
 
+/**
+ * Saved state holds a copy of players and teams, which goes stale when the JSON changes.
+ * Prefer the JSON version for matching ids, and keep any entries added through the admin pages.
+ */
+function withStaticData(saved: AuctionState): AuctionState {
+  const playerIds = new Set(auctionData.players.map(p => p.id));
+  const teamIds = new Set(auctionData.teams.map(t => t.id));
+  return {
+    ...saved,
+    players: [...auctionData.players, ...saved.players.filter(p => !playerIds.has(p.id))],
+    teams: [...auctionData.teams, ...saved.teams.filter(t => !teamIds.has(t.id))],
+  };
+}
+
 const STATE_URL = '/api/state';
 const POLL_MS = 2000;
 
@@ -252,7 +266,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         loaded.current = true;
         if (text === lastSynced.current) return;
         lastSynced.current = text;
-        dispatch({ type: 'LOAD', state: JSON.parse(text) as AuctionState });
+        dispatch({ type: 'LOAD', state: withStaticData(JSON.parse(text) as AuctionState) });
       } catch {
         // Server unreachable: keep working with local state.
       }

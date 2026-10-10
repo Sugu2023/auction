@@ -25,6 +25,7 @@ export interface Player {
   category: Category;
   basePrice: number;
   photo?: string;
+  phone?: string; // digits, with or without country code, e.g. "9876543210"
 }
 
 export interface UserAccount {
