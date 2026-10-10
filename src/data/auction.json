@@ -1,0 +1,44 @@
+{
+  "auction": {
+    "name": "Sports E Auction",
+    "totalTeams": 3,
+    "basePurse": 1000,
+    "bidIncrement": 10
+  },
+  "teams": [
+    {
+      "id": "team-yellow-titans",
+      "name": "Elandhai Super Kings",
+      "logo": "/logos/yellow-titans.svg",
+      "owner": "Thirumurugan",
+      "captain": "Sugumaran"
+    },
+    {
+      "id": "team-navy-strikers",
+      "name": "Elandhai Titans",
+      "logo": "/logos/navy-strikers.svg",
+      "owner": "Ajith",
+      "captain": "Rishi"
+    },
+    {
+      "id": "team-golden-gladiators",
+      "name": "Elandhai Paltans",
+      "logo": "/logos/golden-gladiators.svg",
+      "owner": "Prasanna",
+      "captain": "Krishna"
+    }
+  ],
+  "players": [
+    { "id": "p1", "name": "Palani", "category": "Batsman", "basePrice": 100, "photo": "/players/palani.jpeg" },
+    { "id": "p2", "name": "Sarathy", "category": "Bowler", "basePrice": 100, "photo": "/players/p2.svg" },
+    { "id": "p3", "name": "Siva", "category": "All-rounder", "basePrice": 100, "photo": "/players/p3.svg" },
+    { "id": "p4", "name": "Sanjay", "category": "Keeper", "basePrice": 100, "photo": "/players/p4.svg" },
+    { "id": "p5", "name": "Bhavan", "category": "Batsman", "basePrice": 100, "photo": "/players/p5.svg" }
+  ],
+  "users": [
+    { "username": "admin", "password": "admin123", "role": "admin" },
+    { "username": "yellow", "password": "yellow123", "role": "team", "teamId": "team-yellow-titans" },
+    { "username": "navy", "password": "navy123", "role": "team", "teamId": "team-navy-strikers" },
+    { "username": "gold", "password": "gold123", "role": "team", "teamId": "team-golden-gladiators" }
+  ]
+}
