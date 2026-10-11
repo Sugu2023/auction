@@ -43,7 +43,7 @@ export function AuctionPage() {
   // Open WhatsApp with the congratulation message, then record the sale.
   function handleSold() {
     if (player && leader) {
-      const text = `Congratulations ${player.name}! You have been selected for ${leader.name} in ${config.name}.`;
+      const text = `🎉🏏 Congratulations ${player.name}! 🎊\nYou have been selected for ${leader.name} in ${config.name}. 💛💙`;
       window.open(whatsappLink(player.phone, text), '_blank', 'noopener');
     }
     dispatch({ type: 'SOLD' });
