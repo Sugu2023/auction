@@ -1,11 +1,17 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { auctionData } from '../data';
+import { apiRequest, setAuthToken } from '../api/client';
 import type { Role } from '../types';
 
 export interface Session {
   username: string;
   role: Role;
   teamId?: string;
+  token: string;
+}
+
+interface LoginResponse {
+  token: string;
+  user: { id: number; username: string; role: Role; teamId: string | null };
 }
 
 const STORAGE_KEY = 'sports-e-auction-session';
@@ -30,25 +36,38 @@ function writeSession(session: Session | null) {
 
 interface AuthContextValue {
   session: Session | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(readSession);
+  const [session, setSession] = useState<Session | null>(() => {
+    const saved = readSession();
+    setAuthToken(saved?.token ?? null);
+    return saved;
+  });
 
-  function login(username: string, password: string): boolean {
-    const user = auctionData.users.find(u => u.username === username.trim() && u.password === password);
-    if (!user) return false;
-    const next: Session = { username: user.username, role: user.role, teamId: user.teamId };
+  // Throws ApiError with the server's message when the login is rejected.
+  async function login(username: string, password: string) {
+    const { token, user } = await apiRequest<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: { username: username.trim(), password },
+    });
+    const next: Session = {
+      username: user.username,
+      role: user.role,
+      teamId: user.teamId ?? undefined,
+      token,
+    };
+    setAuthToken(token);
     writeSession(next);
     setSession(next);
-    return true;
   }
 
   function logout() {
+    setAuthToken(null);
     writeSession(null);
     setSession(null);
   }

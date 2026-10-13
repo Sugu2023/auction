@@ -1,15 +1,6 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Brand } from './Brand';
-
-const LINKS = [
-  { to: '/admin/setup', label: 'Auction Setup' },
-  { to: '/admin/teams', label: 'Teams' },
-  { to: '/admin/players', label: 'Players' },
-  { to: '/admin/start', label: 'Start Auction' },
-  { to: '/admin/auction', label: 'Live Auction' },
-  { to: '/admin/squads', label: 'Squads' },
-];
 
 export function AdminLayout() {
   const { session, logout } = useAuth();
@@ -23,17 +14,13 @@ export function AdminLayout() {
   return (
     <div>
       <header className="topbar">
-        <Brand />
+        <Link to="/admin" className="brand-link">
+          <Brand />
+        </Link>
         <nav className="nav">
-          {LINKS.map(link => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          <Link to="/admin" className="nav-link">
+            Auctions
+          </Link>
         </nav>
         <div className="topbar-right">
           <span className="muted">{session?.username}</span>

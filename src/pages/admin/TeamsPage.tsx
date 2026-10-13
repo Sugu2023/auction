@@ -1,52 +1,83 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { ApiError } from '../../api/client';
+import { isAuctionLocked, purseOf } from '../../auctionState';
 import { TeamLogo } from '../../components/TeamLogo';
-import { isAuctionLocked, purseOf, useAuction } from '../../context/AuctionContext';
+import { useAuction } from '../../context/AuctionContext';
 import { formatRupees } from '../../utils';
-import type { Team } from '../../types';
 
 const DEFAULT_LOGO = '/logos/default.svg';
 
 export function TeamsPage() {
-  const { state, dispatch } = useAuction();
+  const { state, send } = useAuction();
   const [name, setName] = useState('');
   const [owner, setOwner] = useState('');
   const [captain, setCaptain] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [logo, setLogo] = useState('');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const locked = isAuctionLocked(state);
   const full = state.teams.length >= state.config.totalTeams;
+  const disabled = locked || full || saving;
 
   function handleLogoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Logo must be 2 MB or smaller.');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setLogo(String(reader.result));
     reader.readAsDataURL(file);
   }
 
-  function handleAdd(e: FormEvent) {
+  async function handleAdd(e: FormEvent) {
     e.preventDefault();
+    setError('');
     if (!name.trim() || !owner.trim() || !captain.trim()) {
       setError('Team name, owner and captain are required.');
       return;
     }
-    if (state.teams.some(t => t.name.toLowerCase() === name.trim().toLowerCase())) {
-      setError('A team with this name already exists.');
+    if (!username.trim() || password.length < 6) {
+      setError('Give the team a login: a username and a password of at least 6 characters.');
       return;
     }
-    const team: Team = {
-      id: `team-${Date.now()}`,
-      name: name.trim(),
-      owner: owner.trim(),
-      captain: captain.trim(),
-      logo: logo || DEFAULT_LOGO,
-    };
-    dispatch({ type: 'ADD_TEAM', team });
-    setName('');
-    setOwner('');
-    setCaptain('');
-    setLogo('');
+
+    setSaving(true);
+    try {
+      await send(`/auctions/${state.config.id}/teams`, {
+        method: 'POST',
+        body: {
+          name: name.trim(),
+          owner: owner.trim(),
+          captain: captain.trim(),
+          username: username.trim(),
+          password,
+          logo: logo || DEFAULT_LOGO,
+        },
+      });
+      setName('');
+      setOwner('');
+      setCaptain('');
+      setUsername('');
+      setPassword('');
+      setLogo('');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not add the team.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemove(teamId: string) {
     setError('');
+    try {
+      await send(`/auctions/${state.config.id}/teams/${teamId}`, { method: 'DELETE' });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not remove the team.');
+    }
   }
 
   return (
@@ -54,7 +85,7 @@ export function TeamsPage() {
       <div className="page-head">
         <h1>Teams</h1>
         <p className="muted">
-          Add each team with its logo, owner and captain ({state.teams.length} / {state.config.totalTeams} added).
+          Add each team with its logo, owner, captain and a login for the team ({state.teams.length} / {state.config.totalTeams} added).
         </p>
       </div>
 
@@ -66,24 +97,38 @@ export function TeamsPage() {
           <div className="form-grid">
             <label>
               Team name
-              <input value={name} disabled={locked || full} onChange={e => setName(e.target.value)} />
+              <input value={name} disabled={disabled} onChange={e => setName(e.target.value)} />
             </label>
             <label>
               Owner name
-              <input value={owner} disabled={locked || full} onChange={e => setOwner(e.target.value)} />
+              <input value={owner} disabled={disabled} onChange={e => setOwner(e.target.value)} />
             </label>
             <label>
               Captain name
-              <input value={captain} disabled={locked || full} onChange={e => setCaptain(e.target.value)} />
+              <input value={captain} disabled={disabled} onChange={e => setCaptain(e.target.value)} />
             </label>
             <label>
               Team logo (image)
-              <input type="file" accept="image/*" disabled={locked || full} onChange={handleLogoChange} />
+              <input type="file" accept="image/*" disabled={disabled} onChange={handleLogoChange} />
+            </label>
+            <label>
+              Team login username
+              <input value={username} disabled={disabled} autoComplete="off" onChange={e => setUsername(e.target.value)} />
+            </label>
+            <label>
+              Team login password
+              <input
+                type="password"
+                value={password}
+                disabled={disabled}
+                autoComplete="new-password"
+                onChange={e => setPassword(e.target.value)}
+              />
             </label>
           </div>
           <div className="form-actions">
-            <button className="btn btn-yellow" type="submit" disabled={locked || full}>
-              Add team
+            <button className="btn btn-yellow" type="submit" disabled={disabled}>
+              {saving ? 'Adding…' : 'Add team'}
             </button>
             {error && <span className="alert alert-error" style={{ margin: 0 }}>{error}</span>}
           </div>
@@ -102,8 +147,8 @@ export function TeamsPage() {
               <button
                 className="btn btn-danger btn-small"
                 style={{ marginTop: 8 }}
-                disabled={locked}
-                onClick={() => dispatch({ type: 'REMOVE_TEAM', teamId: team.id })}
+                disabled={locked || saving}
+                onClick={() => handleRemove(team.id)}
               >
                 Remove
               </button>

@@ -1,11 +1,13 @@
+import { purseOf, squadOf } from '../../auctionState';
 import { TeamLogo } from '../../components/TeamLogo';
-import { purseOf, squadOf, useAuction } from '../../context/AuctionContext';
+import { useAuction } from '../../context/AuctionContext';
+import { downloadTeamPdf } from '../../teamPdf';
 import { formatRupees } from '../../utils';
 
 export function SquadsPage() {
   const { state } = useAuction();
-  const soldIds = new Set(Object.keys(state.sold));
-  const unsoldPlayers = state.players.filter(p => state.unsold.includes(p.id) && !soldIds.has(p.id));
+  const soldIds = new Set(state.sales.map(s => s.playerId));
+  const unsoldPlayers = state.players.filter(p => state.live.unsold.includes(p.id) && !soldIds.has(p.id));
 
   return (
     <>
@@ -27,6 +29,9 @@ export function SquadsPage() {
                 </div>
               </div>
               <div className="purse-amount">Purse: {formatRupees(purseOf(state, team.id))}</div>
+              <button className="btn btn-navy btn-small" onClick={() => downloadTeamPdf(team, state)}>
+                Download PDF
+              </button>
             </div>
             {squad.length === 0 ? (
               <p className="muted">No players bought yet.</p>

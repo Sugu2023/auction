@@ -539,6 +539,74 @@ select:focus {
   background: var(--yellow);
 }
 
+/* Auction section menu */
+.sub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sub-link {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sub-link.active {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--navy-deep);
+}
+
+.brand-link {
+  text-decoration: none;
+}
+
+/* Photos */
+.player-photo-thumb {
+  width: 48px;
+  height: 56px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.photo-preview {
+  width: 96px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--yellow);
+}
+
+.player-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.player-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.player-tile .player-photo {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 6;
+}
+
 /* Team dashboard */
 .team-hero {
   display: flex;
