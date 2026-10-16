@@ -3,6 +3,7 @@ import { ApiError } from '../../api/client';
 import { isAuctionLocked } from '../../auctionState';
 import { PlayerPhoto } from '../../components/PlayerPhoto';
 import { useAuction } from '../../context/AuctionContext';
+import { downloadPlayersPdf } from '../../playersPdf';
 import { CATEGORIES, type Category } from '../../types';
 import { formatRupees } from '../../utils';
 
@@ -15,6 +16,7 @@ export function PlayersPage() {
   const [basePrice, setBasePrice] = useState('100');
   const [phone, setPhone] = useState('');
   const [photo, setPhoto] = useState('');
+  const [pdfCategory, setPdfCategory] = useState<Category | 'All'>('All');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const locked = isAuctionLocked(state);
@@ -149,6 +151,31 @@ export function PlayersPage() {
             {error && <span className="alert alert-error" style={{ margin: 0 }}>{error}</span>}
           </div>
         </form>
+      </section>
+
+      <section className="card">
+        <h3>Download player list</h3>
+        <p className="muted">Choose a category to get a PDF of its players, to send to the auction representatives.</p>
+        <div className="form-actions">
+          <label style={{ minWidth: 220 }}>
+            Category
+            <select value={pdfCategory} onChange={e => setPdfCategory(e.target.value as Category | 'All')}>
+              <option value="All">All categories</option>
+              {CATEGORIES.map(c => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="btn btn-navy"
+            disabled={state.players.length === 0}
+            onClick={() => downloadPlayersPdf(state, pdfCategory)}
+          >
+            Download PDF
+          </button>
+        </div>
       </section>
 
       <section className="card">

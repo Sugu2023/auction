@@ -30,7 +30,10 @@ function AuctionFrame() {
         <Link to="/admin" className="muted">
           ← All auctions
         </Link>
-        <h1 style={{ marginTop: 4 }}>{state.config.name}</h1>
+        <div className="row" style={{ marginTop: 4 }}>
+          {state.config.logo && <img src={state.config.logo} alt="Auction logo" className="auction-logo" />}
+          <h1>{state.config.name}</h1>
+        </div>
       </div>
 
       <nav className="sub-nav">

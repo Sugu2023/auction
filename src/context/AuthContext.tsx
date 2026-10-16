@@ -19,7 +19,10 @@ const STORAGE_KEY = 'sports-e-auction-session';
 function readSession(): Session | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as Partial<Session>;
+    // Sessions saved before the token was stored are unusable: ask for a fresh login.
+    return saved.token ? (saved as Session) : null;
   } catch {
     return null;
   }

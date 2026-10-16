@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { purseOf, squadOf, type AuctionState } from './auctionState';
 import type { Team } from './types';
+import { addLogo } from './pdfUtils';
 
 // The PDF font has no ₹ symbol, so amounts use "Rs." here.
 const rs = (value: number) => `Rs. ${value.toLocaleString('en-IN')}`;
@@ -13,6 +14,7 @@ export function downloadTeamPdf(team: Team, state: AuctionState) {
   const squad = squadOf(state, team.id);
   const spent = state.config.basePurse - purse;
 
+  addLogo(doc, state.config.logo, 168, 10, 24);
   doc.setFontSize(18);
   doc.text(team.name, 14, 20);
   doc.setFontSize(11);

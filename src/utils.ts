@@ -21,3 +21,21 @@ export function whatsappLink(phone: string | undefined, text: string): string {
   const base = number ? `https://wa.me/${number}` : 'https://wa.me/';
   return `${base}?text=${encodeURIComponent(text)}`;
 }
+
+/** Reads an auction logo file as a base64 data URL. Only PNG and JPEG can go into the PDFs. */
+export function readAuctionLogo(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      reject(new Error('The logo must be a PNG or JPEG image.'));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      reject(new Error('The logo must be 2 MB or smaller.'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Could not read the file.'));
+    reader.readAsDataURL(file);
+  });
+}

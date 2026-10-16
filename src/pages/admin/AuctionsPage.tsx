@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest, ApiError } from '../../api/client';
-import { formatRupees } from '../../utils';
+import { formatRupees, readAuctionLogo } from '../../utils';
 
 interface AuctionSummary {
   id: string;
@@ -9,6 +9,7 @@ interface AuctionSummary {
   totalTeams: number;
   basePurse: number;
   bidIncrement: number;
+  logo: string | null;
 }
 
 export function AuctionsPage() {
@@ -18,6 +19,7 @@ export function AuctionsPage() {
   const [totalTeams, setTotalTeams] = useState('3');
   const [basePurse, setBasePurse] = useState('1000');
   const [bidIncrement, setBidIncrement] = useState('10');
+  const [logo, setLogo] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +32,16 @@ export function AuctionsPage() {
       .catch(err => setError(err instanceof ApiError ? err.message : 'Could not load auctions.'))
       .finally(() => setLoaded(true));
   }, []);
+
+  async function handleLogoChange(file: File | undefined) {
+    if (!file) return;
+    try {
+      setLogo(await readAuctionLogo(file));
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not read the logo.');
+    }
+  }
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
@@ -47,9 +59,11 @@ export function AuctionsPage() {
           totalTeams: Number(totalTeams),
           basePurse: Number(basePurse),
           bidIncrement: Number(bidIncrement),
+          logo: logo || null,
         },
       });
       setName('');
+      setLogo('');
       await loadAuctions();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not create the auction.');
@@ -75,7 +89,7 @@ export function AuctionsPage() {
     <>
       <div className="page-head">
         <h1>Auctions</h1>
-        <p className="muted">Create an auction, then add its teams and players. Each auction has its own teams and players.</p>
+        <p className="muted">Create an auction with its logo, then add its teams and players.</p>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -100,7 +114,24 @@ export function AuctionsPage() {
               Bid increment (₹)
               <input type="number" min={1} value={bidIncrement} disabled={saving} onChange={e => setBidIncrement(e.target.value)} />
             </label>
+            <label>
+              Auction logo (PNG or JPEG)
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                disabled={saving}
+                onChange={e => handleLogoChange(e.target.files?.[0])}
+              />
+            </label>
           </div>
+          {logo && (
+            <div className="row" style={{ marginTop: 12 }}>
+              <img src={logo} alt="Logo preview" className="auction-logo" />
+              <button type="button" className="btn btn-ghost btn-small" onClick={() => setLogo('')}>
+                Remove logo
+              </button>
+            </div>
+          )}
           <div className="form-actions">
             <button className="btn btn-yellow" type="submit" disabled={saving}>
               {saving ? 'Creating…' : 'Create auction'}
@@ -112,7 +143,10 @@ export function AuctionsPage() {
       <div className="grid-cards">
         {auctions.map(auction => (
           <div className="card" key={auction.id}>
-            <h3>{auction.name}</h3>
+            <div className="row">
+              {auction.logo && <img src={auction.logo} alt="" className="auction-logo" />}
+              <h3>{auction.name}</h3>
+            </div>
             <p className="kv muted">
               {auction.totalTeams} teams · base purse {formatRupees(auction.basePurse)} · bid step {formatRupees(auction.bidIncrement)}
             </p>

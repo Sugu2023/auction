@@ -9,6 +9,7 @@ export interface AuctionConfig {
   totalTeams: number;
   basePurse: number;
   bidIncrement: number;
+  logo: string | null;
 }
 
 export interface Sale {
